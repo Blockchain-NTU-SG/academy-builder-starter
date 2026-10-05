@@ -5,6 +5,8 @@ Checked on 5 October 2026 on macOS arm64, Node 24.19.0, Foundry 1.8.4 and Solidi
 ## Passed
 
 - Fresh Git clone with recursive submodules and `npm ci`.
+- Published repository downloaded again with recursive submodules; `npm ci` and `npm run doctor` passed.
+- GitHub Actions on Ubuntu with Node 22.18.0 passed compilation, tests, TypeScript, production build and local-chain integration for [main](https://github.com/Blockchain-NTU-SG/academy-builder-starter/actions/runs/37322774748) and the [w5-start checkpoint](https://github.com/Blockchain-NTU-SG/academy-builder-starter/actions/runs/37322775779).
 - `npm run check`: compilation, 13 Foundry tests (including 256 fuzz runs), six wallet-provider tests, strict TypeScript checking and production frontend build.
 - `npm run test:integration`: simulation leaves state unchanged; two local accounts write; successful receipts match resulting state and logs; empty, overlong and multibyte-overlong input is rejected; non-owner clearing fails; owner clearing preserves count/visitor; merged events are ordered; invalid chain metadata and stale deployments are rejected.
 - Browser local-demo flow: choose account, submit a message, observe pending then confirmed status, updated message/count, and matching event history.
@@ -19,6 +21,6 @@ Checked on 5 October 2026 on macOS arm64, Node 24.19.0, Foundry 1.8.4 and Solidi
 ## Not yet verified
 
 - An actual browser-wallet approval, rejection, account change and network switch. Six provider-mock tests cover connect permission, wrong network, empty accounts, rejection, missing-chain addition and switch verification. The test browser has no wallet extension, so complete the actual-wallet check before teaching W5.4.
-- Windows/WSL and Linux learner installations locally. The supplied GitHub Actions workflow is configured to check Linux with Node 22.18.0 once the repository is published.
+- Windows/WSL learner installations and interactive Linux browser use. Automated Linux installation and checks passed in GitHub Actions as recorded above.
 - Public-testnet deployment: deliberately outside the starter's local-only scope.
 - Final curriculum fit against the team's full pivot specification, which was not supplied.
