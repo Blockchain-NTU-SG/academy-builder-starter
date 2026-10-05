@@ -1,4 +1,7 @@
 import "./style.css";
+import { startParticles } from "./particles";
+const stopParticles = startParticles();
+if (import.meta.hot) import.meta.hot.dispose(() => stopParticles?.());
 import {
   createWalletClient,
   custom,

@@ -12,7 +12,7 @@ try {
   const hash = await wallet.deployContract({
     abi,
     bytecode: artifact.bytecode.object as Hex,
-    args: ["Hello from Blockchain@NTU"],
+    args: ["Hello from NTU Blockchain Builder Lab"],
   });
   const receipt = await publicClient.waitForTransactionReceipt({
     hash,

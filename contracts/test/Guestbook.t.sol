@@ -9,11 +9,11 @@ contract GuestbookTest is Test {
     event MessageChanged(address indexed visitor, string newMessage);
 
     function setUp() public {
-        book = new Guestbook("Hello from Blockchain@NTU");
+        book = new Guestbook("Hello from NTU Blockchain Builder Lab");
     }
 
     function testInitialState() public view {
-        require(keccak256(bytes(book.message())) == keccak256("Hello from Blockchain@NTU"));
+        require(keccak256(bytes(book.message())) == keccak256("Hello from NTU Blockchain Builder Lab"));
         require(book.lastVisitor() == address(0));
         require(book.visitCount() == 0);
     }
@@ -21,10 +21,10 @@ contract GuestbookTest is Test {
     function testWriteUpdatesAllStateAndEmitsEvent() public {
         address visitor = address(0xA11CE);
         vm.expectEmit(true, false, false, true, address(book));
-        emit MessageChanged(visitor, "Hello Arjun");
+        emit MessageChanged(visitor, "Hello from NTU Blockchain Builder Lab");
         vm.prank(visitor);
-        book.setMessage("Hello Arjun");
-        require(keccak256(bytes(book.getMessage())) == keccak256("Hello Arjun"));
+        book.setMessage("Hello from NTU Blockchain Builder Lab");
+        require(keccak256(bytes(book.getMessage())) == keccak256("Hello from NTU Blockchain Builder Lab"));
         require(book.lastVisitor() == visitor);
         require(book.visitCount() == 1);
     }
@@ -33,7 +33,7 @@ contract GuestbookTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Guestbook.EmptyMessage.selector));
         book.setMessage("");
         require(book.visitCount() == 0);
-        require(keccak256(bytes(book.message())) == keccak256("Hello from Blockchain@NTU"));
+        require(keccak256(bytes(book.message())) == keccak256("Hello from NTU Blockchain Builder Lab"));
     }
 
     function testBoundary140BytesAccepted() public {

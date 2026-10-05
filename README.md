@@ -70,7 +70,7 @@ npm run read
 You should see a contract address, passing tests, and:
 
 ```text
-Message: Hello from Blockchain@NTU
+Message: Hello from NTU Blockchain Builder Lab
 Updates: 0
 Last visitor: 0x0000000000000000000000000000000000000000
 ```
@@ -86,7 +86,7 @@ npm run dev
 Open **http://127.0.0.1:5173**. Keep both terminals running.
 
 1. Click **Use local demo**.
-2. Enter `Hello from Arjun`.
+2. Enter `Hello from NTU Blockchain Builder Lab`.
 3. Click **Save to blockchain**.
 4. Watch Simulate → Submit → Confirm.
 5. The saved message and count update. The activity trail shows the contract event.

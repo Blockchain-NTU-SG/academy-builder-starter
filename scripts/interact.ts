@@ -31,13 +31,13 @@ try {
       strict: true,
     });
     if (!logs.length)
-      console.log('No updates yet. Run npm run write -- "Hello Arjun".');
+      console.log('No updates yet. Run npm run write -- "Hello from NTU Blockchain Builder Lab".');
     for (const log of logs)
       console.log(
         `Block ${log.blockNumber}: ${log.args.visitor} → ${log.args.newMessage}\n  Transaction: ${log.transactionHash}`,
       );
   } else if (command === "simulate" || command === "write") {
-    const message = process.argv[3] ?? "Hello from Arjun";
+    const message = process.argv[3] ?? "Hello from NTU Blockchain Builder Lab";
     const wallet = await localWallet();
     const before = await publicClient.readContract({
       ...contract,
