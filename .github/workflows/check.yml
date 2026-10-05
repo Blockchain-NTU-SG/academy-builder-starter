@@ -1,0 +1,34 @@
+name: Starter checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.4
+      - run: npm ci
+      - run: npm run check
+      - name: Local integration test
+        shell: bash
+        run: |
+          anvil --host 127.0.0.1 --chain-id 31337 > /tmp/academy-anvil.log 2>&1 &
+          ANVIL_PID=$!
+          trap 'kill "$ANVIL_PID"' EXIT
+          for attempt in {1..30}; do
+            if cast block-number --rpc-url http://127.0.0.1:8545 > /dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          npm run deploy
+          npm run test:integration

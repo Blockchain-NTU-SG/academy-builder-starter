@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#14271d" />
+    <meta
+      name="description"
+      content="A local blockchain Guestbook for Blockchain@NTU Academy."
+    />
+    <title>Guestbook · Blockchain@NTU</title>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <a class="brand" href="/" aria-label="Guestbook home"
+          ><span class="mark">B<span>↗</span></span
+          ><span
+            >BLOCKCHAIN<span class="brand-sub">@ NTU ACADEMY</span></span
+          ></a
+        ><span class="network"><i></i> LOCAL PRACTICE NETWORK</span>
+      </header>
+      <main>
+        <div class="intro">
+          <p class="eyebrow">BUILDER LAB / 01</p>
+          <h1>A small message.<br />A real transaction.</h1>
+          <p class="lede">
+            Leave your mark on the Guestbook. Follow your message from a button
+            click to a record on your local blockchain.
+          </p>
+        </div>
+        <div class="workspace">
+          <section class="message-card" aria-labelledby="current-title">
+            <div class="card-heading">
+              <span class="eyebrow" id="current-title">ON THE CHAIN</span
+              ><span class="live" id="chain-status">Checking connection</span>
+            </div>
+            <blockquote id="current-message">
+              Connecting to your Guestbook…
+            </blockquote>
+            <div class="message-meta">
+              <div>
+                <span class="label">MESSAGE UPDATES</span
+                ><strong id="visit-count">—</strong>
+              </div>
+              <div>
+                <span class="label">LAST VISITOR</span
+                ><code id="last-visitor">—</code>
+              </div>
+            </div>
+            <div class="contract-row">
+              <span>CONTRACT</span><code id="contract-address">Not loaded</code
+              ><button id="refresh" class="text-button" type="button">
+                Refresh ↻
+              </button>
+            </div>
+          </section>
+          <section class="compose-card" aria-labelledby="compose-title">
+            <span class="eyebrow">YOUR TURN</span>
+            <h2 id="compose-title">Say something.</h2>
+            <p class="muted">
+              Messages are visible to anyone using this local chain. Keep
+              personal information out.
+            </p>
+            <div class="account-box">
+              <span class="label">WRITING AS</span>
+              <p id="account-label">Choose an account to get started</p>
+              <div class="account-actions">
+                <button id="demo" type="button" class="secondary">
+                  Use local demo</button
+                ><button id="connect" type="button" class="text-button">
+                  Connect wallet ↗
+                </button>
+              </div>
+              <button
+                id="switch-network"
+                class="text-button"
+                type="button"
+                hidden
+              >
+                Switch wallet to local network
+              </button>
+            </div>
+            <form id="message-form">
+              <label for="message-input">Your message</label
+              ><textarea
+                id="message-input"
+                rows="3"
+                placeholder="Hello from Blockchain@NTU"
+              ></textarea>
+              <div class="input-meta">
+                <span>UTF-8 bytes, not characters</span
+                ><span id="byte-count">0 / 140</span>
+              </div>
+              <button id="submit" type="submit" class="primary" disabled>
+                Save to blockchain <span>↗</span>
+              </button>
+            </form>
+            <p class="demo-note" id="mode-note">
+              Demo mode uses a public local test account. No extension, real ETH
+              or private key needed.
+            </p>
+          </section>
+        </div>
+        <section class="transaction-card" aria-labelledby="flow-title">
+          <div>
+            <span class="eyebrow" id="flow-title">FOLLOW THE TRANSACTION</span>
+            <p id="status" role="status" aria-live="polite">
+              Start your local chain and deploy the Guestbook to begin.
+            </p>
+            <code id="transaction-hash"></code>
+          </div>
+          <ol class="steps">
+            <li id="step-simulate">01 <span>Simulate</span></li>
+            <li id="step-submit">02 <span>Submit</span></li>
+            <li id="step-confirm">03 <span>Confirm</span></li>
+          </ol>
+        </section>
+        <section class="history" aria-labelledby="history-title">
+          <div class="history-heading">
+            <div>
+              <span class="eyebrow">EVENTS AS DATA</span>
+              <h2 id="history-title">The activity trail.</h2>
+            </div>
+            <span class="muted" id="event-count">0 events</span>
+          </div>
+          <ol id="event-list">
+            <li class="empty">
+              No messages yet. Your first update starts the story.
+            </li>
+          </ol>
+        </section>
+      </main>
+      <footer>
+        <span>Blockchain@NTU · Academy Builder Starter</span
+        ><span>Practice locally. Learn by doing.</span>
+      </footer>
+    </div>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>

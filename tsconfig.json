@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node", "vite/client"],
+    "skipLibCheck": true
+  },
+  "include": ["scripts", "shared", "frontend", "vite.config.ts"]
+}

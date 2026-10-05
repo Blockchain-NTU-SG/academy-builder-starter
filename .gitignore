@@ -1,0 +1,11 @@
+node_modules/
+dist/
+contracts/out/
+contracts/cache/
+shared/abi.ts
+frontend/public/deployment.json
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
