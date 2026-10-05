@@ -92,6 +92,10 @@ Open **http://127.0.0.1:5173**. Keep both terminals running.
 5. The saved message and count update. The activity trail shows the contract event.
 6. Refresh the page: the value remains because it is stored on the running chain.
 
+The **Clear message** action is available only to the account that deployed the contract. Clearing emits an event and preserves the visit count and last visitor, matching the handbook W6.1 example.
+
+The interface uses the actual club logo and official blue/cyan/charcoal palette, with a secondary purple accent. Background particles run locally, can be paused in the footer, and respect your system’s reduced-motion preference.
+
 The app renders message text safely as text, not HTML. Messages are limited to **140 UTF-8 bytes**, which may be fewer than 140 visible characters.
 
 ## 6. Try the TypeScript scripts — Terminal C
@@ -103,6 +107,8 @@ npm run read
 npm run simulate -- "Hello from a script"
 npm run read
 npm run write -- "Hello from a script"
+npm run events
+npm run clear
 npm run events
 ```
 
@@ -144,13 +150,13 @@ The app checks deployment code and block identity to detect an old deployment. I
 npm run check
 ```
 
-This compiles, runs contract tests, checks TypeScript, and builds the frontend. With Anvil running and a deployment ready, also run:
+This compiles, runs contract tests and wallet-provider tests, checks TypeScript, and builds the frontend. With Anvil running and a deployment ready, also run:
 
 ```bash
 npm run test:integration
 ```
 
-The integration test writes two labelled messages to the local Guestbook. It verifies two accounts, receipt status, stored data, events, rejected inputs, read-only simulation, and stale-deployment rejection. GitHub Actions runs both check sets on pushes and pull requests.
+The integration test writes two labelled messages, rejects a non-owner clear, then clears as the owner. It verifies account permissions, successful receipts, stored data, ordered events, rejected input, read-only simulation, and stale-deployment rejection. GitHub Actions runs both check sets on pushes and pull requests.
 
 ## Where things live
 
@@ -161,6 +167,8 @@ The integration test writes two labelled messages to the local Guestbook. It ver
 | `scripts/deploy.ts` | Local deployment and shared address export |
 | `scripts/interact.ts` | Read, simulate, write, verify and event examples |
 | `shared/chain.ts` | Local network checks, deployment validation, error text |
+| `shared/history.ts` | Ordered update and clear event history |
+| `shared/wallet.ts` | Wallet connection and local-network switching |
 | `shared/abi.ts` | Generated contract interface; run `npm run compile` |
 | `frontend/main.ts` | Wallet/demo connection, transaction flow and activity list |
 | `frontend/public/deployment.json` | Generated local deployment record; do not commit |
@@ -169,10 +177,27 @@ The integration test writes two labelled messages to the local Guestbook. It ver
 
 Dependencies are locked in `package-lock.json`; use `npm ci` to install those exact versions. Never upload `node_modules`, private keys or `.env` secrets.
 
+## Lesson starting point versus working reference
+
+`main` is the complete working reference, including the owner-only clearing behaviour already published in the handbook W6.1 example.
+
+The `w5-start` tag preserves the simpler, runnable Guestbook before owner-only clearing. For a separate W5.2 exercise copy:
+
+```bash
+git clone --recurse-submodules --branch w5-start https://github.com/Blockchain-NTU-SG/academy-builder-starter.git academy-w5-exercise
+cd academy-w5-exercise
+git switch -c exercise/contract-extension
+npm ci
+```
+
+Use one practice app at a time (they share ports 8545 and 5173). Compile and deploy after changing versions. The baseline validates its constructor input; `main` deliberately follows W6.1's constructor semantics, which accept the initial message unchanged. Both validate every `setMessage` call.
+
+The Education team still owns the lesson text, task specs, model answers and approval. See [requirements coverage](docs/REQUIREMENTS.md) and [teaching notes](docs/TEACHING-NOTES.md).
+
 ## Scope and attribution
 
 This repository is a runnable **starter/reference**, not the final lesson text or official assessment. The handbook remains the canonical lesson source. Students need clear exercise starting points agreed by the Education team; see the teaching notes.
 
-Guestbook adapts the MIT-marked Solidity example in [Academy Week 3](https://github.com/Blockchain-NTU-SG/academy-handbook/blob/9443a1bfe4a75345975ed21252bf872cc6f8acd0/docs/foundation/week-3/part-3-remix-lab.md). The current [Week 6 testing draft](https://github.com/Blockchain-NTU-SG/academy-handbook/blob/9443a1bfe4a75345975ed21252bf872cc6f8acd0/docs/tracks/builder/week-6/part-1-testing-contract-behaviour.md) informed the initial-message constructor and message-length rules; its owner-only clearing extension is intentionally left for lesson work. No handbook prose is copied here.
+Guestbook adapts the MIT-marked Solidity example in [Academy Week 3](https://github.com/Blockchain-NTU-SG/academy-handbook/blob/9443a1bfe4a75345975ed21252bf872cc6f8acd0/docs/foundation/week-3/part-3-remix-lab.md). The current [Week 6 testing draft](https://github.com/Blockchain-NTU-SG/academy-handbook/blob/9443a1bfe4a75345975ed21252bf872cc6f8acd0/docs/tracks/builder/week-6/part-1-testing-contract-behaviour.md) is implemented in `main`, including constructor semantics, owner-only clearing, errors, and event behaviour. The earlier `w5-start` checkpoint leaves ownership and clearing for extension work. No handbook prose is copied here.
 
-Code and these original setup notes: [MIT](LICENSE). The pinned `forge-std` submodule retains its own licences. Official references: [Foundry](https://getfoundry.sh/), [viem](https://viem.sh/), [Vite](https://vite.dev/).
+Code and these original setup notes: [MIT](LICENSE). Club branding is excluded from that licence; see [logo attribution](frontend/public/brand/ATTRIBUTION.md). The pinned `forge-std` submodule retains its own licences. Official references: [Foundry](https://getfoundry.sh/), [viem](https://viem.sh/), [Vite](https://vite.dev/).

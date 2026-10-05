@@ -6,6 +6,7 @@ import {
   assertDeployment,
 } from "../shared/chain.js";
 import { deployment, localWallet } from "./local.js";
+import { readHistory } from "../shared/history.js";
 
 // Uses the running local practice chain. Appends two clearly labelled messages.
 const d = await deployment();
@@ -95,6 +96,44 @@ assert.equal(
   events[1].args.visitor.toLowerCase(),
   second.account.address.toLowerCase(),
 );
+await assert.rejects(
+  publicClient.simulateContract({
+    ...contract,
+    functionName: "clearMessage",
+    account: second.account,
+  }),
+  /NotOwner/,
+);
+assert.equal(
+  await publicClient.readContract({ ...contract, functionName: "message" }),
+  "Integration: second visitor",
+);
+const clear = await publicClient.simulateContract({
+  ...contract,
+  functionName: "clearMessage",
+  account: first.account,
+});
+const clearHash = await first.writeContract(clear.request);
+assert.equal(
+  (await publicClient.waitForTransactionReceipt({ hash: clearHash })).status,
+  "success",
+);
+assert.equal(
+  await publicClient.readContract({ ...contract, functionName: "message" }),
+  "",
+);
+assert.equal(
+  await publicClient.readContract({ ...contract, functionName: "visitCount" }),
+  before + 2n,
+);
+assert.equal(
+  await publicClient.readContract({ ...contract, functionName: "lastVisitor" }),
+  second.account.address,
+);
+const history = await readHistory(d);
+assert.equal(history.at(-1)?.kind, "cleared");
+assert.equal(history.at(-1)?.transactionHash, clearHash);
+assert.equal(history.at(-2)?.kind, "changed");
 assert.throws(
   () => parseDeployment({ ...d, chainId: 1 }),
   /invalid deployment/,
@@ -108,5 +147,5 @@ await assert.rejects(
   /older chain/,
 );
 console.log(
-  "PASS: simulation is read-only; two accounts write; receipts, state and events agree; invalid inputs and stale deployments are rejected.",
+  "PASS: read-only simulation; two-account writes; invalid inputs and non-owner clearing rejected; owner clearing preserves count/visitor; ordered event history; stale deployment guards.",
 );

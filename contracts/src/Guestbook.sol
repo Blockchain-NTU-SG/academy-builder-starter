@@ -6,16 +6,20 @@ pragma solidity 0.8.28;
 contract Guestbook {
     error EmptyMessage();
     error MessageTooLong(uint256 length, uint256 maxLength);
+    error NotOwner(address caller);
 
     uint256 public constant MAX_LENGTH = 140;
+    address public immutable owner;
     string public message;
     address public lastVisitor;
     uint256 public visitCount;
 
     event MessageChanged(address indexed visitor, string newMessage);
+    event MessageCleared(address indexed by);
 
     constructor(string memory initialMessage) {
-        _validate(initialMessage);
+        // Matches the handbook W6.1 example: validation applies to setMessage.
+        owner = msg.sender;
         message = initialMessage;
     }
 
@@ -29,6 +33,13 @@ contract Guestbook {
 
     function getMessage() external view returns (string memory) {
         return message;
+    }
+
+    function clearMessage() external {
+        if (msg.sender != owner) revert NotOwner(msg.sender);
+        delete message;
+        // Clearing preserves the last visitor and update count, as in W6.1.
+        emit MessageCleared(msg.sender);
     }
 
     function _validate(string memory text) private pure {

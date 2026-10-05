@@ -1,54 +1,54 @@
 # Education team handoff
 
-This repo supplies a tested local environment and an end-to-end reference flow. It does not alter the approved curriculum or replace pages in `academy-handbook`. Agree the final exercise boundaries with Thet before distributing it to learners.
+The handbook is the canonical lesson source. This repo provides the runnable contract, TypeScript scripts and small frontend required by the team plan. It does not replace the six Part tasks with a separate weekly submission.
 
-## Current contract promises
+## Two coherent starting points
 
-- Constructor accepts one nonempty message of at most 140 UTF-8 bytes.
-- Anyone can call `setMessage` with a valid message, including the same message again.
-- Each successful update replaces `message`, stores `lastVisitor`, increments `visitCount`, and emits `MessageChanged(address indexed visitor, string newMessage)`.
-- Invalid messages revert without changing state or producing a successful event.
-- The initial constructor message does not count as a visit and does not emit `MessageChanged`.
-- No ownership, clearing, money or token behaviour exists in this baseline.
+- **`main`: working reference.** The W6.1 Guestbook behaviour is implemented end to end, including owner-only clearing and both event types.
+- **`w5-start`: earlier runnable checkpoint.** Guestbook writes, validation, scripts, wallet UI and update history work; ownership and clearing are absent. Learners can branch from here for an extension task. The baseline has constructor validation; `main` follows the W6 draft's unvalidated constructor exactly.
 
-## Mapping to the team plan (proposed exercise boundaries)
+The owner-only extension is already published as code in W6.1. This repo does not publish the team's private model answers, planted-bug fixtures, security challenge answers or independent challenge specifications.
 
-| Part | Working support in this repo | Suggested learner work |
+## Current contract promises (`main`)
+
+- Constructor sets `owner` to the deployer and accepts the initial message unchanged, matching W6.1.
+- Every `setMessage` rejects empty input and input longer than 140 UTF-8 bytes.
+- Each successful write replaces `message`, sets `lastVisitor`, increments `visitCount` and emits `MessageChanged(address indexed visitor, string newMessage)`.
+- Only `owner` can call `clearMessage`; another caller receives `NotOwner(address caller)`.
+- Clearing deletes only `message`, emits `MessageCleared(address indexed by)`, and preserves visitor/count. Repeated clears are allowed.
+- Anyone can write a valid message after a clear.
+- `getMessage()` remains as a harmless Week 3-compatible convenience read.
+- Deployment emits no message-update event and starts count at zero.
+
+## Lesson handoffs
+
+| Part owner | Supporting material | Education team work still needed |
 |---|---|---|
-| Arjun W5.1 | Foundry, local deployment, passing baseline tests, read script | Run it and explain compile/deploy/read with evidence |
-| Arjun W5.2 | Small contract with observable state, logs and errors | Add `owner`, owner-only `clearMessage`, `NotOwner` error and `MessageCleared` event; agree exact semantics with Thet |
-| Arjun W5.3 | Complete `scripts/interact.ts` reference | Use it as a worked example; assign a new interaction with the W5.2 extension |
-| Arjun W5.4 | Complete wallet/demo UI reference | Extend the UI for the new contract action; demonstrate approval, pending, rejection and success |
-| Sowmiya W5.5 | Typed `getContractEvents`, block-bounded reads, safe text rendering | Extend activity history for `MessageCleared`, or filter activity by visitor |
-| Arjun W5.6 | One working app and reusable config | Integrate the agreed extension across contract, scripts and frontend |
-| Thet W6 | forge-std already installed; contract + integration tests | Add the agreed behavioural tests, debugging/security fixtures and later testnet deployment |
+| Arjun W5.1 | README setup, Foundry + forge-std, tests, deployment, read script with chain/block/state | Lesson page, worked example and task evidence |
+| Arjun W5.2 | `w5-start` before extension; `main` with ownership rule, clear event and failure | Select and specify the learner extension; keep model answer in reviewer space |
+| Arjun W5.3 | `scripts/interact.ts`: read, simulate, write, wait for receipt, read back; clear script | Lesson and task built on the same app |
+| Arjun W5.4 | Demo plus actual wallet path; network guards; pending, success, rejection and error states | Browser-wallet walkthrough and cohort-wallet acceptance check |
+| Sowmiya W5.5 | `shared/history.ts`, events script, real event-history UI | Events lesson and agreed learner exercise |
+| Arjun W5.6 | Integrated contract/scripts/wallet/frontend/history | Mini-dApp task and evidence requirements |
+| Thet W6.1 | Contract matches current handbook behaviour; forge-std and repeatable tests | Final lesson review and private model answer |
+| Thet W6.2–W6.6 | Reusable app, error paths, tests and reproducible local deployment | Broken/unsafe exercise variants, unfamiliar-tool task, shipping spec and independent challenge |
 
-These are suggestions, not new assessment requirements. The existing reference flow stays runnable: no hidden TODO makes initial installation fail. This is not a public model answer for the owner-only extension. Keep instructor model answers in the team's agreed reviewer location.
+These mappings are supporting implementation evidence, not new assessment requirements. In particular, `main`'s reference code is not itself a learner submission. Both weeks' independent-challenge wording should be resolved against the pivot specification by Education leadership.
 
-## W6 compatibility checkpoint
+## Events integration for Sowmiya
 
-The handbook's W6.1 example is a stand-in with ownership and clearing. This starter shares the initial-message constructor, state names, 140-byte limit, `EmptyMessage`, `MessageTooLong` and `MessageChanged`. It also validates the initial constructor message.
-
-After W5.2, agree whether `clearMessage` preserves the visit count and last visitor (the existing W6 draft does), whether it emits only `MessageCleared`, and who the constructor sets as owner. Update the lesson example, tests and starter stage together. Do not point the unmodified W6 owner/clear tests at this baseline and expect them to pass.
-
-## Files Sowmiya can rely on
-
-- Generated ABI: `shared/abi.ts`, regenerated after every compile.
-- Deployment: `frontend/public/deployment.json`, includes address, chain, deployment block and identity checks.
-- Event schema: `MessageChanged(address indexed visitor, string newMessage)`.
-- Script reference: `npm run events`.
-- Frontend reference: activity rendering in `frontend/main.ts`.
-- Generate activity: `npm run write -- "Example activity"`; use only invented messages.
-
-The history lists the newest 20 events and loads all events since deployment. This is fine for a tiny local course chain. Public RPC pagination, reorg handling, indexing and production-scale history are outside the baseline.
+- ABI is generated in `shared/abi.ts`; never hand-edit it.
+- `frontend/public/deployment.json` records contract address, chain, deployment block and identity.
+- `readHistory` queries both event types up to one fixed latest block and orders them by block/log index.
+- The frontend displays the latest 20 events and total event count. Click Refresh for changes made by other clients.
+- `npm run write -- "Example activity"` creates an update; `npm run clear` creates a clear as local account 0 (the default deployer).
+- Small local chains need no indexer. Public-RPC pagination, persistent indexing and reorg recovery are outside this local starter.
 
 ## Before the cohort uses it
 
-1. Review the Guestbook choice against the full pivot document (not available during implementation).
-2. Agree lesson starting snapshots/tags or branches; avoid a maze of unrelated example apps.
-3. Ask a second person to follow README from a fresh clone.
-4. Test the wallet exercise in the browser wallet used by the cohort, including rejection, account change and wrong network.
-5. Keep W6 unsafe/broken examples in explicit exercise branches, not the default working starter.
-6. Keep handbook pages at the current `docs/tracks/builder/week-5/` and `week-6/` paths, not the older PDF's `docs/foundation/week-5/` suggestion.
-
-No public-testnet deployment, hosting, grading system, authentication backend, API account or mainnet integration is included.
+1. Review the app choice and exercise boundaries against the full pivot document (not supplied during implementation).
+2. Use current handbook locations `docs/tracks/builder/week-5/` and `week-6/`; the PDF's `docs/foundation/week-5/` path predates the current structure.
+3. Use `templates/deep-dive-part.md` for final lesson pages, with explanation, worked example, one 100-point task, evidence, completion/revision criteria and source links. Keep model answers in the agreed reviewer location.
+4. Test with the actual browser wallet used by the cohort, including rejection, network and account changes. Provider mocks supplement but do not replace that check.
+5. Create explicitly labelled broken/unsafe exercise versions only when their specifications exist; do not weaken the working default.
+6. Public testnet deployment belongs to the W6 shipping lesson, not a mainnet requirement. Agree its target chain and configuration with Thet.

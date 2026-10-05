@@ -7,6 +7,7 @@ import {Test} from "forge-std/Test.sol";
 contract GuestbookTest is Test {
     Guestbook book;
     event MessageChanged(address indexed visitor, string newMessage);
+    event MessageCleared(address indexed by);
 
     function setUp() public {
         book = new Guestbook("Hello from NTU Blockchain Builder Lab");
@@ -16,6 +17,7 @@ contract GuestbookTest is Test {
         require(keccak256(bytes(book.message())) == keccak256("Hello from NTU Blockchain Builder Lab"));
         require(book.lastVisitor() == address(0));
         require(book.visitCount() == 0);
+        assertEq(book.owner(), address(this));
     }
 
     function testWriteUpdatesAllStateAndEmitsEvent() public {
@@ -55,14 +57,49 @@ contract GuestbookTest is Test {
         book.setMessage(text);
     }
 
-    function testConstructorRejectsEmptyMessage() public {
-        vm.expectRevert(abi.encodeWithSelector(Guestbook.EmptyMessage.selector));
-        new Guestbook("");
+    function testConstructorMatchesHandbookWithoutValidation() public {
+        Guestbook empty = new Guestbook("");
+        assertEq(empty.message(), "");
+        Guestbook longInitial = new Guestbook(string(new bytes(141)));
+        assertEq(bytes(longInitial.message()).length, 141);
     }
 
-    function testConstructorRejectsLongMessage() public {
-        vm.expectRevert(abi.encodeWithSelector(Guestbook.MessageTooLong.selector, 141, 140));
-        new Guestbook(string(new bytes(141)));
+    function testOwnerClearsEmitsEventAndPreservesVisitorAndCount() public {
+        vm.prank(address(0xA11CE));
+        book.setMessage("A visitor was here");
+        vm.expectEmit(true, false, false, true, address(book));
+        emit MessageCleared(address(this));
+        book.clearMessage();
+        assertEq(book.message(), "");
+        assertEq(book.visitCount(), 1);
+        assertEq(book.lastVisitor(), address(0xA11CE));
+    }
+
+    function testNonOwnerCannotClearAndStateIsPreserved() public {
+        vm.prank(address(0xA11CE));
+        book.setMessage("Keep this message");
+        vm.expectRevert(abi.encodeWithSelector(Guestbook.NotOwner.selector, address(0xB0B)));
+        vm.prank(address(0xB0B));
+        book.clearMessage();
+        assertEq(book.message(), "Keep this message");
+        assertEq(book.lastVisitor(), address(0xA11CE));
+        assertEq(book.visitCount(), 1);
+    }
+
+    function testAnyoneCanWriteAfterOwnerClears() public {
+        book.clearMessage();
+        vm.prank(address(0xB0B));
+        book.setMessage("A fresh start");
+        assertEq(book.message(), "A fresh start");
+        assertEq(book.lastVisitor(), address(0xB0B));
+        assertEq(book.visitCount(), 1);
+    }
+
+    function testOwnerCanClearAnAlreadyEmptyMessage() public {
+        book.clearMessage();
+        book.clearMessage();
+        assertEq(book.message(), "");
+        assertEq(book.visitCount(), 0);
     }
 
     function testRepeatedMessagesStillCountTransactions() public {

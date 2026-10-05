@@ -11,6 +11,8 @@ import {
   type Hex,
 } from "viem";
 import { abi } from "../shared/abi";
+import { readHistory } from "../shared/history";
+import { connectPracticeWallet, switchToLocalNetwork } from "../shared/wallet";
 import {
   chain,
   rpcUrl,
@@ -28,6 +30,7 @@ const submit = $<HTMLButtonElement>("submit");
 const provider = (window as Window & { ethereum?: EIP1193Provider }).ethereum;
 let deployed: Deployment | undefined;
 let account: Address | undefined;
+let owner: Address | undefined;
 let mode: "demo" | "wallet" | undefined;
 let busy = false;
 let walletChain: number | undefined;
@@ -56,6 +59,15 @@ function controls() {
     ? `${mode === "demo" ? "Local demo" : "Wallet"} · ${short(account)}`
     : "Choose an account to get started";
   $("account-label").title = account ?? "";
+  $<HTMLButtonElement>("clear").disabled =
+    busy ||
+    !deployed ||
+    !account ||
+    account.toLowerCase() !== owner?.toLowerCase() ||
+    (mode === "wallet" && walletChain !== 31337);
+  $<HTMLButtonElement>("refresh").disabled = busy;
+  $<HTMLButtonElement>("switch-network").disabled = busy;
+  input.disabled = busy;
 }
 
 async function refreshInner() {
@@ -77,20 +89,20 @@ async function refreshInner() {
   const d = parseDeployment(raw);
   await assertDeployment(d);
   const contract = { address: d.address, abi };
-  const [message, count, visitor, events] = await Promise.all([
+  const [message, count, visitor, contractOwner, events] = await Promise.all([
     publicClient.readContract({ ...contract, functionName: "message" }),
     publicClient.readContract({ ...contract, functionName: "visitCount" }),
     publicClient.readContract({ ...contract, functionName: "lastVisitor" }),
-    publicClient.getContractEvents({
-      ...contract,
-      eventName: "MessageChanged",
-      fromBlock: BigInt(d.blockNumber),
-      toBlock: "latest",
-      strict: true,
-    }),
+    publicClient.readContract({ ...contract, functionName: "owner" }),
+    readHistory(d),
   ]);
   deployed = d;
-  $("current-message").textContent = message;
+  owner = contractOwner;
+  $("owner-tools").hidden = false;
+  $("owner-address").textContent = short(owner);
+  $("owner-address").title = owner;
+  $("current-message").textContent =
+    message || "Message cleared. A new hello starts here.";
   $("visit-count").textContent = count.toString();
   $("last-visitor").textContent =
     count === 0n ? "You could be first" : short(visitor);
@@ -110,10 +122,10 @@ async function refreshInner() {
     const body = document.createElement("div");
     const text = document.createElement("p");
     text.className = "event-message";
-    text.textContent = event.args.newMessage;
+    text.textContent = event.message;
     const detail = document.createElement("div");
     detail.className = "event-details";
-    detail.textContent = `${short(event.args.visitor)} · tx ${short(event.transactionHash)}`;
+    detail.textContent = `${event.kind === "cleared" ? "Cleared" : "Updated"} by ${short(event.visitor)} · tx ${short(event.transactionHash)}`;
     detail.title = event.transactionHash;
     const block = document.createElement("span");
     block.className = "event-block";
@@ -172,10 +184,10 @@ $("connect").addEventListener("click", async () => {
       throw new Error(
         "No browser wallet detected. Install a wallet, or choose Use local demo.",
       );
-    const accounts = await provider.request({ method: "eth_requestAccounts" });
-    account = accounts[0];
+    const connected = await connectPracticeWallet(provider);
+    account = connected.account;
     mode = "wallet";
-    walletChain = Number(await provider.request({ method: "eth_chainId" }));
+    walletChain = connected.chainId;
     $("mode-note").textContent =
       "Wallet mode: use a disposable practice account funded with local test ETH. Never import your real wallet into a demo.";
     status(
@@ -192,30 +204,7 @@ $("connect").addEventListener("click", async () => {
 $("switch-network").addEventListener("click", async () => {
   try {
     if (!provider) return;
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x7a69" }],
-      });
-    } catch (error) {
-      if ((error as { code?: number }).code !== 4902) throw error;
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: "0x7a69",
-            chainName: "Anvil Local Practice",
-            nativeCurrency: { name: "Test Ether", symbol: "ETH", decimals: 18 },
-            rpcUrls: [rpcUrl],
-          },
-        ],
-      });
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x7a69" }],
-      });
-    }
-    walletChain = Number(await provider.request({ method: "eth_chainId" }));
+    walletChain = await switchToLocalNetwork(provider);
     status(
       "Local network selected. Make sure your practice account has local test ETH.",
     );
@@ -261,9 +250,8 @@ $("refresh").addEventListener("click", () => {
     .catch(() => {});
 });
 
-$("message-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (submit.disabled || busy || !account || !deployed) return;
+async function sendChange(action: "write" | "clear") {
+  if (busy || !account || !deployed) return;
   busy = true;
   controls();
   let hash: Hex | undefined;
@@ -287,13 +275,21 @@ $("message-form").addEventListener("submit", async (event) => {
       );
     $("step-simulate").className = "active";
     status("Checking the contract rules…");
-    const { request } = await publicClient.simulateContract({
-      address: deployed.address,
-      abi,
-      functionName: "setMessage",
-      args: [text],
-      account: writer,
-    });
+    const simulation =
+      action === "write"
+        ? await publicClient.simulateContract({
+            address: deployed.address,
+            abi,
+            functionName: "setMessage",
+            args: [text],
+            account: writer,
+          })
+        : await publicClient.simulateContract({
+            address: deployed.address,
+            abi,
+            functionName: "clearMessage",
+            account: writer,
+          });
     $("step-simulate").className = "done";
     $("step-submit").className = "active";
     status(
@@ -301,7 +297,11 @@ $("message-form").addEventListener("submit", async (event) => {
         ? "Approve the transaction in your wallet."
         : "Sending from the local demo account…",
     );
-    hash = await wallet.writeContract(request);
+    const request = simulation.request;
+    hash =
+      request.functionName === "setMessage"
+        ? await wallet.writeContract(request)
+        : await wallet.writeContract(request);
     $("transaction-hash").textContent = hash;
     $("step-submit").className = "done";
     $("step-confirm").className = "active";
@@ -317,8 +317,12 @@ $("message-form").addEventListener("submit", async (event) => {
     confirmed = true;
     $("step-confirm").className = "done";
     await refresh();
-    status("Confirmed. Your message was saved to the blockchain.");
-    if (input.value === text) input.value = "";
+    status(
+      action === "write"
+        ? "Confirmed. Your message was saved to the blockchain."
+        : "Confirmed. The owner cleared the message. Previous activity is preserved.",
+    );
+    if (action === "write" && input.value === text) input.value = "";
   } catch (error) {
     status(
       confirmed
@@ -332,6 +336,14 @@ $("message-form").addEventListener("submit", async (event) => {
     busy = false;
     controls();
   }
+}
+
+$("message-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!submit.disabled) void sendChange("write");
+});
+$("clear").addEventListener("click", () => {
+  if (!$<HTMLButtonElement>("clear").disabled) void sendChange("clear");
 });
 
 void refresh()

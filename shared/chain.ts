@@ -77,6 +77,8 @@ export async function assertDeployment(d: Deployment) {
 
 export function describeError(error: unknown): string {
   const text = error instanceof Error ? error.message : String(error);
+  if (/NotOwner/.test(text))
+    return "Only the account that deployed this contract can clear its message.";
   if (/EmptyMessage/.test(text))
     return "The contract rejected an empty message. Enter a message and try again.";
   if (/MessageTooLong/.test(text))

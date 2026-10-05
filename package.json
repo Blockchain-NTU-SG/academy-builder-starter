@@ -18,11 +18,13 @@
     "simulate": "tsx scripts/interact.ts simulate",
     "write": "tsx scripts/interact.ts write",
     "events": "tsx scripts/interact.ts events",
+    "clear": "tsx scripts/interact.ts clear",
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "npm run compile && npm run typecheck && vite build",
     "test:integration": "tsx scripts/integration.ts",
-    "check": "npm run compile && npm run test:contract && npm run typecheck && vite build",
+    "test:wallet": "tsx --test scripts/wallet.test.ts",
+    "check": "npm run compile && npm run test:contract && npm run test:wallet && npm run typecheck && vite build",
     "test": "npm run check"
   },
   "dependencies": {
