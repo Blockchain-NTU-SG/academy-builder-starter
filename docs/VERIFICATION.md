@@ -12,4 +12,8 @@ Tested with Node 22.18.0, npm 10.9.3, Foundry 1.8.4 and Solidity 0.8.28 on macOS
 - Fresh recursive clone: npm ci, root forge test, production build and browser preview passed under Node 22.18.0.
 - Deployment script smoke-tested in a separate disposable local chain/copy: transaction, confirmations, owner verification, generated exports, README replacement and read output passed. That local test address was discarded and is not presented as a Sepolia deployment.
 
-Pending: funded Sepolia deployment, real Sepolia contract read and hosted CI. These will be recorded after they run; an RPC connection alone is not a deployed contract.
+- Actual Ethereum Sepolia deployment confirmed twice: `0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1`.
+- Transaction: `0xc825e4ce7ecd413817ae4e45c89de9f80d4f28e4b468efea5beb038ac8008cc3`.
+- `npm run read` against the public Sepolia RPC returned `Hello from NTU Blockchain Builder Lab` from that contract.
+
+Hosted CI status is available in the repository's Actions tab. Windows/WSL setup has not been tested locally. The page remains a TODO scaffold by design; wallet approval and UI read/write/events are learner work.

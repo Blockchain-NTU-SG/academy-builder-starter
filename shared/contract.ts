@@ -3,7 +3,7 @@ import { sepolia } from 'viem/chains'
 import type { Address } from 'viem'
 
 export const chain = sepolia
-export const address: Address | undefined = undefined
+export const address: Address | undefined = "0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1"
 export const abi = [
   {
     "type": "constructor",

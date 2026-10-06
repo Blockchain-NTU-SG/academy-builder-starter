@@ -7,7 +7,7 @@ The direct October 6 brief supersedes the earlier local Guestbook interpretation
 | `forge test` from a fresh root clone | Root `foundry.toml`, six Registry tests |
 | TypeScript prints a value read from Sepolia | `npm run read`; `scripts/read.ts` |
 | `npm run dev` opens frontend | Official Vite React TypeScript scaffold, `src/App.tsx` |
-| Contract deployed on Sepolia, README address | `deployments/sepolia.json`, README deployment block; pending until funded |
+| Contract deployed on Sepolia, README address | `deployments/sepolia.json`, README deployment block; confirmed 6 October 2026 |
 | Solidity + Foundry; TypeScript + viem; React + Vite | Exact dependency versions and compiler/tool pins |
 | No wagmi, RainbowKit, Scaffold-ETH, UI library | None included |
 | Small Registry with access rule, event, revert | Own-record writes; owner clearing; RecordUpdated; three custom errors |

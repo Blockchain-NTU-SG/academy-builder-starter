@@ -3,7 +3,9 @@
 A small **Registry** for the Wednesday 7 October milestone: Solidity + Foundry, TypeScript + viem, React + Vite, and Ethereum Sepolia. The frontend is intentionally unfinished so learners can implement W5.4 and W5.5.
 
 <!-- deployment:start -->
-Sepolia deployment pending test ETH funding. Do not treat this milestone as complete until an address is recorded here.
+**Ethereum Sepolia (11155111)** · Registry: [`0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1`](https://sepolia.etherscan.io/address/0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1)
+
+[Deployment transaction](https://sepolia.etherscan.io/tx/0xc825e4ce7ecd413817ae4e45c89de9f80d4f28e4b468efea5beb038ac8008cc3)
 <!-- deployment:end -->
 
 ## 1. Install the pinned tools
