@@ -1,45 +1,53 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { keccak256, type Hex } from "viem";
-import { abi } from "../shared/abi.js";
-import { publicClient, describeError } from "../shared/chain.js";
-import { localWallet } from "./local.js";
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
+import { createWalletClient, isHex, type Hex } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { abi, chain } from '../shared/contract.js'
+import { client, transport, requireSepolia } from './client.js'
 
-try {
-  const wallet = await localWallet();
-  const artifact = JSON.parse(
-    await readFile("contracts/out/Guestbook.sol/Guestbook.json", "utf8"),
-  );
-  const hash = await wallet.deployContract({
-    abi,
-    bytecode: artifact.bytecode.object as Hex,
-    args: ["Hello from NTU Blockchain Builder Lab"],
-  });
-  const receipt = await publicClient.waitForTransactionReceipt({
-    hash,
-    timeout: 30_000,
-  });
-  if (receipt.status !== "success" || !receipt.contractAddress)
-    throw new Error("Deployment failed.");
-  const address = receipt.contractAddress;
-  const code = await publicClient.getCode({ address });
-  if (!code) throw new Error("Deployed contract has no code.");
-  const d = {
-    address,
-    chainId: 31337,
-    blockNumber: receipt.blockNumber.toString(),
-    blockHash: receipt.blockHash,
-    transactionHash: hash,
-    runtimeCodeHash: keccak256(code),
-  };
-  await mkdir("frontend/public", { recursive: true });
-  await writeFile(
-    "frontend/public/deployment.json",
-    JSON.stringify(d, null, 2) + "\n",
-  );
-  console.log(
-    `Guestbook deployed on LOCAL Anvil\nAddress: ${address}\nTransaction: ${hash}\nRun npm run read or npm run dev next.`,
-  );
-} catch (error) {
-  console.error(describeError(error));
-  process.exitCode = 1;
+async function main() {
+  await requireSepolia()
+  const key = process.env.PRIVATE_KEY
+  if (!key || !isHex(key) || key.length !== 66) throw new Error('Set a disposable Sepolia PRIVATE_KEY in .env.')
+  const account = privateKeyToAccount(key)
+  console.log(`Sepolia deployer: ${account.address}`)
+  const pendingFile = '.deployment-pending.json'
+  let hash: Hex
+  if (existsSync(pendingFile)) {
+    const pending = JSON.parse(readFileSync(pendingFile, 'utf8'))
+    if (pending.deployer !== account.address || pending.chainId !== chain.id) throw new Error('Pending deployment belongs to a different account/network.')
+    hash = pending.hash
+    console.log('Resuming receipt check for the previously submitted deployment.')
+  } else {
+    if (await client.getBalance({ address: account.address }) === 0n) throw new Error('Fund this address with free Sepolia test ETH, then retry.')
+    const artifact = JSON.parse(readFileSync('out/Registry.sol/Registry.json', 'utf8'))
+    const wallet = createWalletClient({ account, chain, transport })
+    hash = await wallet.deployContract({ abi, bytecode: artifact.bytecode.object as Hex })
+    writeFileSync(pendingFile, JSON.stringify({ hash, deployer: account.address, chainId: chain.id }))
+  }
+  console.log(`Transaction: ${hash}`)
+  const receipt = await client.waitForTransactionReceipt({ hash, confirmations: 2, timeout: 180_000 })
+  if (receipt.status !== 'success' || !receipt.contractAddress) {
+    unlinkSync(pendingFile)
+    throw new Error('Deployment reverted. Check the transaction before retrying.')
+  }
+  const address = receipt.contractAddress
+  const owner = await client.readContract({ address, abi, functionName: 'owner' })
+  if (owner !== account.address) throw new Error('Deployed contract owner did not match the deployer.')
+  writeFileSync('deployments/sepolia.json', JSON.stringify({ chainId: chain.id, address,
+    transactionHash: hash, blockNumber: receipt.blockNumber.toString(), owner }, null, 2) + '\n')
+  await import('./export-contract.js')
+  const readme = readFileSync('README.md', 'utf8')
+  writeFileSync('README.md', readme.replace(/<!-- deployment:start -->[\s\S]*?<!-- deployment:end -->/,
+    `<!-- deployment:start -->
+**Ethereum Sepolia (11155111)** · Registry: [\`${address}\`](https://sepolia.etherscan.io/address/${address})
+
+[Deployment transaction](https://sepolia.etherscan.io/tx/${hash})
+<!-- deployment:end -->`))
+  unlinkSync(pendingFile)
+  console.log(`Deployed and verified: ${address}. Shared config and README updated.`)
 }
+main().catch((error: unknown) => {
+  console.error(error instanceof Error && !('shortMessage' in error)
+    ? error.message : 'Sepolia deployment failed. Check RPC access, test ETH and any printed transaction hash. Retry to resume a pending receipt.')
+  process.exitCode = 1
+})

@@ -1,11 +1,13 @@
 node_modules/
 dist/
+out/
+cache/
 contracts/out/
 contracts/cache/
-shared/abi.ts
-frontend/public/deployment.json
 .env
 .env.*
 !.env.example
+.deployment-pending.json
 .DS_Store
 *.log
+*.tsbuildinfo

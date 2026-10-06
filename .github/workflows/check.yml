@@ -20,15 +20,9 @@ jobs:
           version: v1.8.4
       - run: npm ci
       - run: npm run check
-      - name: Local integration test
-        shell: bash
-        run: |
-          anvil --host 127.0.0.1 --chain-id 31337 > /tmp/academy-anvil.log 2>&1 &
-          ANVIL_PID=$!
-          trap 'kill "$ANVIL_PID"' EXIT
-          for attempt in {1..30}; do
-            if cast block-number --rpc-url http://127.0.0.1:8545 > /dev/null 2>&1; then break; fi
-            sleep 1
-          done
-          npm run deploy
-          npm run test:integration
+      - name: Verify generated ABI is committed
+        run: git diff --exit-code -- shared/contract.ts
+      - name: Read deployed Sepolia record (no private key)
+        env:
+          RPC_URL: https://ethereum-sepolia-rpc.publicnode.com
+        run: npm run read
