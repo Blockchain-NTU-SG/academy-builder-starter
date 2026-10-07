@@ -1,5 +1,7 @@
 # NTU Blockchain Builder Starter
 
+> **You are on the `w6-3-security-lab` branch.** It adds a deliberately unsafe `TipRegistry` contract for Builder Week 6 Part 3. Read [LAB-W6-3.md](LAB-W6-3.md) first. Never deploy that contract or send it real funds.
+
 A small **Registry** for the Wednesday 7 October milestone: Solidity + Foundry, TypeScript + viem, React + Vite, and Ethereum Sepolia. The frontend is intentionally unfinished so learners can implement W5.4 and W5.5.
 
 <!-- deployment:start -->
