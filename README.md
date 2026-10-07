@@ -1,5 +1,7 @@
 # NTU Blockchain Builder Starter
 
+> **You are on the `w6-2-broken-dapp` branch.** It contains a finished app with planted faults for Builder Week 6 Part 2. Read [LAB-W6-2.md](LAB-W6-2.md) first.
+
 A small **Registry** for the Wednesday 7 October milestone: Solidity + Foundry, TypeScript + viem, React + Vite, and Ethereum Sepolia. The frontend is intentionally unfinished so learners can implement W5.4 and W5.5.
 
 <!-- deployment:start -->

@@ -10,3 +10,7 @@ button, input { border: 1px solid #54527a; border-radius: 6px; padding: 9px 14px
 button { cursor: not-allowed; }
 input { display: block; width: 100%; margin: 6px 0 12px; }
 footer { color: #a4abc0; font-size: .9rem; margin-top: 28px; }
+button:not(:disabled) { cursor: pointer; border-color: #37a4e3; color: #e6ecff; }
+.error { color: #ff9b9b; overflow-wrap: anywhere; }
+.ok { color: #8be0a4; }
+code { overflow-wrap: anywhere; }
