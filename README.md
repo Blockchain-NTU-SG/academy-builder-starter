@@ -1,6 +1,6 @@
 # NTU Blockchain Builder Starter
 
-A small **Registry** for the Wednesday 7 October milestone: Solidity + Foundry, TypeScript + viem, React + Vite, and Ethereum Sepolia. The frontend is intentionally unfinished so learners can implement W5.4 and W5.5.
+A small **Registry** built with Solidity + Foundry, TypeScript + viem, React + Vite, and Ethereum Sepolia. The frontend is intentionally unfinished so learners can implement W5.4 and W5.5.
 
 <!-- deployment:start -->
 **Ethereum Sepolia (11155111)** · Registry: [`0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1`](https://sepolia.etherscan.io/address/0xf3eea9aa5a43846490a638f1b2bebb29ac2938b1)
@@ -109,10 +109,9 @@ If a transaction was submitted but waiting timed out, run `npm run deploy` again
 | `src/App.tsx` | Four learner TODO sections |
 | `.env.example` | RPC and private-key placeholders |
 
-Run `npm run compile` after changing Solidity to regenerate the shared ABI. It is committed so a fresh `npm ci && npm run dev` works without an extra build step. Run `npm run check` to compile, test and build everything. Dependency versions are exact in `package.json` and locked in `package-lock.json`. Rollup is overridden to 4.63.6: 4.64.0 stalled while bundling this React starter during verification.
+Run `npm run compile` after changing Solidity to regenerate the shared ABI. It is committed so a fresh `npm ci && npm run dev` works without an extra build step. Run `npm run check` to compile, test and build everything. Dependency versions are exact in `package.json` and locked in `package-lock.json`.
 
 The React structure comes from the official Vite `react-ts` template, generated with `npm create vite@7.1.3 … -- --template react-ts`. We kept its React entry point, Vite React plugin and TypeScript project structure, replaced the example UI with TODOs, and pinned dependency versions. [Official Vite setup guide](https://vite.dev/guide/).
 
-This main branch follows the updated October 6 starter brief. Earlier Guestbook commits and the old `w5-start` tag are historical and are not the current lesson starting point. W5 model answers and W6 broken/vulnerable versions are outside this repo's current deliverable.
 
 Code: [MIT](LICENSE). Club logo: [attribution](public/brand/ATTRIBUTION.md), excluded from the code licence.
