@@ -14,7 +14,18 @@ Use **Node 22.18.0** (npm 10.9.3), **Foundry 1.8.4**, and Git. Solidity **0.8.28
 
 - [Node installation](https://nodejs.org/en/download). If you use nvm, run `nvm install` and `nvm use` after cloning; `.nvmrc` selects the version.
 - [Foundry installation](https://getfoundry.sh/introduction/installation/), then `foundryup --install v1.8.4`.
-- Windows: use WSL2 for these terminal commands.
+- **Windows:** use [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install), a Linux environment that runs alongside Windows, for the terminal commands in this guide. Open your project from the WSL terminal after installation.
+
+Open a terminal (a text app where you type commands and read their output) and check the tools:
+
+```bash
+node --version
+npm --version
+git --version
+forge --version
+```
+
+Node should report **v22.18.0**, npm **10.9.3**, and Forge **1.8.4**; Git should print its installed version. Seeing version numbers means each command is available. If a command is not recognised, install the pinned tool above before continuing.
 
 ## 2. Clone and install
 
@@ -24,6 +35,11 @@ cd academy-builder-starter
 npm ci
 cp .env.example .env
 ```
+
+- `git clone` copies the project and its test-library submodule onto your laptop.
+- `cd academy-builder-starter` moves the terminal into that project folder; commands that follow run there.
+- `npm ci` installs the exact JavaScript packages recorded in the lockfile. It may take a few minutes; completion returns you to the command prompt.
+- `cp .env.example .env` creates your private local settings file. The command normally prints nothing; `.env` should appear in the folder and is ignored by Git.
 
 If you forgot `--recurse-submodules`, run `git submodule update --init --recursive`. The pinned submodule is the Foundry test library, forge-std v1.9.7.
 
@@ -37,7 +53,7 @@ From the repository root:
 forge test
 ```
 
-All six tests should pass. They check initial state, per-account writes, the event, empty/overlong reverts, and owner-only clearing. Tests run locally; they do not spend Sepolia ETH.
+`forge test` compiles and runs the Solidity tests locally. All six should pass; they check initial state, per-account writes, the event, empty/overlong reverts, and owner-only clearing. Tests do not spend Sepolia ETH.
 
 ## 4. Read a value from Sepolia
 
@@ -62,16 +78,16 @@ This is a real RPC read, not a mock. The value can change if the owner updates i
 npm run dev
 ```
 
-Open the local URL printed by Vite (normally **http://127.0.0.1:5173**). Leave the command running; stop it with Ctrl+C.
+`npm run dev` asks Vite to start a local web server. Open the URL it prints (normally **http://127.0.0.1:5173**). The terminal stays occupied while the server runs; press **Ctrl+C** there to stop it.
 
-The page loads immediately and shows the shared contract metadata plus four TODO sections in `src/App.tsx`:
+The page loads immediately and shows the shared contract metadata plus four scaffolded sections in `src/App.tsx`:
 
 1. **Account/network** — connect an account and show/check its network (W5.4).
 2. **One read** — read and display a Registry record (W5.4).
 3. **One write** — submit `setRecord` and show pending/success/error (W5.4).
-4. **Events list** — retrieve and display `RecordUpdated` logs (W5.5).
+4. **Events list** — retrieve and display `RecordUpdated` logs (W5.5). The starter includes an inspectable block-range helper, but you still connect it to the right contract event and display/verify the results.
 
-The disabled controls are placeholders, not broken features. No wallet is wired up and no read/write/event solution is included in the frontend. There is no wagmi, RainbowKit, Scaffold-ETH or UI library.
+Ordinary React input and display state are already scaffolded; clicking an unfinished control shows the Web3 work still to implement. No wallet is wired up and no read/write/event solution is included in the frontend. There is no wagmi, RainbowKit, Scaffold-ETH or UI library.
 
 ## 6. Deploy your own Registry (maintainer / optional learner step)
 
@@ -103,10 +119,12 @@ If a transaction was submitted but waiting timed out, run `npm run deploy` again
 | `contracts/src/Registry.sol` | Contract |
 | `contracts/test/Registry.t.sol` | Six Foundry tests |
 | `scripts/read.ts` | Read an actual Sepolia value using viem |
+| `scripts/contract-error-name.ts` | Find the ABI-decoded custom-error name inside a viem error |
 | `scripts/deploy.ts` | Deploy to Sepolia and record the address |
 | `scripts/export-contract.ts` | Export ABI from `out/Registry.sol/Registry.json` |
 | `shared/contract.ts` | Address, Sepolia chain and ABI; imported by scripts and frontend |
-| `src/App.tsx` | Four learner TODO sections |
+| `src/App.tsx` | Ordinary React state and UI scaffold; Web3 behaviour remains TODO |
+| `src/lib/readEventRange.ts` | Read block ranges with bounded windows; inspect the comments and adapt it in W5.5 |
 | `.env.example` | RPC and private-key placeholders |
 
 Run `npm run compile` after changing Solidity to regenerate the shared ABI. It is committed so a fresh `npm ci && npm run dev` works without an extra build step. Run `npm run check` to compile, test and build everything. Dependency versions are exact in `package.json` and locked in `package-lock.json`.

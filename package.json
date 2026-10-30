@@ -13,12 +13,13 @@
     "dev": "vite --host 127.0.0.1",
     "compile": "forge build && tsx scripts/export-contract.ts",
     "test": "forge test",
+    "test:helpers": "tsx scripts/test-read-event-range.ts",
     "read": "tsx scripts/read.ts",
     "deploy": "npm run compile && tsx scripts/deploy.ts",
     "typecheck": "tsc -b",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "npm run compile && forge test && npm run build"
+    "check": "npm run compile && forge test && npm run test:helpers && npm run build"
   },
   "dependencies": {
     "react": "19.1.1",
